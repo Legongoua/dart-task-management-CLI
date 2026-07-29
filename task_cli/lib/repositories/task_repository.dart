@@ -1,6 +1,7 @@
 import '../exceptions/task_exceptions.dart';
 import '../interfaces/storage_interface.dart';
 import '../models/task.dart';
+import '../models/urgent_task.dart';
 
 class Repository<T extends Task> {
   final StorageInterface<T> _storage;
@@ -44,4 +45,19 @@ class Repository<T extends Task> {
     sorted.sort((a, b) => b.priority.value.compareTo(a.priority.value));
     return sorted;
   }
+
+  List<T> getSortedByDate() {
+  final sorted = List<T>.from(_items);
+  sorted.sort((a, b) {
+    // Si la tâche a une date (UrgentTask), on compare la date, sinon on met à la fin
+    DateTime? dateA = (a is UrgentTask) ? a.dueDate : null;
+    DateTime? dateB = (b is UrgentTask) ? b.dueDate : null;
+
+    if (dateA == null && dateB == null) return 0;
+    if (dateA == null) return 1;
+    if (dateB == null) return -1;
+    return dateA.compareTo(dateB);
+  });
+  return sorted;
+}
 }

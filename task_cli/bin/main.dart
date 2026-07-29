@@ -17,44 +17,47 @@ void main() async {
 
   while (true) {
     print('\nMenu :');
-    print('1. Lister les tâches');
-    print('2. Ajouter une tâche');
-    print('3. Marquer une tâche comme terminée');
-    print('4. Supprimer une tâche');
-    print('5. Quitter');
+    print('1. Lister les tâches (tri par Priorité)');
+    print('2. Lister les tâches (tri par Date)');
+    print('3. Ajouter une tâche');
+    print('4. Marquer une tâche comme terminée');
+    print('5. Supprimer une tâche');
+    print('6. Quitter');
     stdout.write('Votre choix : ');
 
     final input = stdin.readLineSync();
 
     switch (input) {
       case '1':
-        _listTasks(repo);
+        _listTasks(repo.getSortedByPriority(), 'Priorité');
         break;
       case '2':
-        await _addTask(repo);
+        _listTasks(repo.getSortedByDate(), 'Date');
         break;
       case '3':
-        await _toggleTask(repo);
+        await _addTask(repo);
         break;
       case '4':
-        await _deleteTask(repo);
+        await _toggleTask(repo);
         break;
       case '5':
+        await _deleteTask(repo);
+        break;
+      case '6':
         print('Au revoir !');
         exit(0);
       default:
-        print('Choix invalide.');
+        print('Choix invalide. Veuillez saisir un nombre entre 1 et 6.');
     }
   }
 }
 
-void _listTasks(Repository<Task> repo) {
-  final tasks = repo.getSortedByPriority();
+void _listTasks(List<Task> tasks, String sortType) {
   if (tasks.isEmpty) {
-    print('Aucune tâche.');
+    print('Aucune tâche enregistrée.');
     return;
   }
-  print('\n--- Liste des Tâches (triées par priorité) ---');
+  print('\n--- Liste des Tâches (tri par $sortType) ---');
   for (var t in tasks) {
     print('ID: ${t.id} | ${t.getFormattedDetails()}');
   }
@@ -63,6 +66,10 @@ void _listTasks(Repository<Task> repo) {
 Future<void> _addTask(Repository<Task> repo) async {
   stdout.write('Titre : ');
   final title = stdin.readLineSync() ?? '';
+  if (title.trim().isEmpty) {
+    print('Erreur : Le titre ne peut pas être vide.');
+    return;
+  }
 
   stdout.write('Priorité (low, medium, high) : ');
   final priorityStr = stdin.readLineSync() ?? 'medium';
@@ -76,8 +83,8 @@ Future<void> _addTask(Repository<Task> repo) async {
   if (isUrgent) {
     stdout.write('Date limite (AAAA-MM-JJ) : ');
     final dateStr = stdin.readLineSync() ?? '';
-    final dueDate = DateTime.tryParse(dateStr) ?? DateTime.now().add(Duration(days: 1));
-    
+    final dueDate = DateTime.tryParse(dateStr) ?? DateTime.now().add(const Duration(days: 1));
+
     await repo.add(UrgentTask(
       id: id,
       title: title,
@@ -91,15 +98,15 @@ Future<void> _addTask(Repository<Task> repo) async {
       priority: priority,
     ));
   }
-  print('Tâche ajoutée !');
+  print('Tâche ajoutée avec succès !');
 }
 
 Future<void> _toggleTask(Repository<Task> repo) async {
-  stdout.write('ID de la tâche terminée : ');
+  stdout.write('ID de la tâche à modifier : ');
   final id = stdin.readLineSync() ?? '';
   try {
     await repo.toggleComplete(id);
-    print('Statut mis à jour !');
+    print('Statut de la tâche mis à jour !');
   } on TaskNotFoundException catch (e) {
     print('Erreur : ${e.message}');
   }
@@ -110,7 +117,7 @@ Future<void> _deleteTask(Repository<Task> repo) async {
   final id = stdin.readLineSync() ?? '';
   try {
     await repo.remove(id);
-    print('Tâche supprimée !');
+    print('Tâche supprimée avec succès !');
   } on TaskNotFoundException catch (e) {
     print('Erreur : ${e.message}');
   }

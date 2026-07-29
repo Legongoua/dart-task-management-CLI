@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
-import 'package:task_cli/models/priority.dart';
 import 'package:task_cli/models/standard_task.dart';
+import 'package:task_cli/models/urgent_task.dart';
 import 'package:task_cli/models/task.dart';
 import 'package:task_cli/repositories/task_repository.dart';
 import 'package:task_cli/interfaces/storage_interface.dart';
@@ -20,17 +20,15 @@ class MockStorage implements StorageInterface<Task> {
 
 void main() {
   late Repository<Task> repo;
-  late MockStorage mockStorage;
 
   setUp(() {
-    mockStorage = MockStorage();
-    repo = Repository<Task>(mockStorage);
+    repo = Repository<Task>(MockStorage());
   });
 
   test('1. Ajouter une tâche augmente la taille du repository', () async {
     final task = StandardTask(id: '1', title: 'Tester');
     await repo.add(task);
-    expect(repo.all.length, 1);
+    expect(repo.all.length, equals(1));
   });
 
   test('2. Marquer une tâche comme terminée modifie son état', () async {
@@ -47,18 +45,18 @@ void main() {
     expect(repo.all.isEmpty, isTrue);
   });
 
-  test('4. Lever TaskNotFoundException lors de la suppression d\'un mauvais ID', () {
+  test('4. Une exception TaskNotFoundException est levée sur un ID inexistant', () {
     expect(() => repo.remove('invalid_id'), throwsA(isA<TaskNotFoundException>()));
   });
 
-  test('5. Le tri par priorité ordonne correctement les tâches', () async {
-    final t1 = StandardTask(id: '1', title: 'Basse', priority: Priority.low);
-    final t2 = StandardTask(id: '2', title: 'Haute', priority: Priority.high);
+  test('5. Le tri par date ordonne correctement les tâches urgentes', () async {
+    final t1 = UrgentTask(id: '1', title: 'Tard', dueDate: DateTime.now().add(const Duration(days: 5)));
+    final t2 = UrgentTask(id: '2', title: 'Tôt', dueDate: DateTime.now().add(const Duration(days: 1)));
 
     await repo.add(t1);
     await repo.add(t2);
 
-    final sorted = repo.getSortedByPriority();
-    expect(sorted.first.priority, Priority.high);
+    final sorted = repo.getSortedByDate();
+    expect(sorted.first.id, equals('2'));
   });
 }

@@ -25,9 +25,5 @@ Avoir [Dart](https://dart.dev/get-dart) installé sur sa machine.
 ```bash
 git clone <URL_DE_TON_REPO_GITHUB>
 cd task_cli
-
-## 🚀 Lancer l'application
-
-```bash
 dart pub get
 dart run bin/main.dart

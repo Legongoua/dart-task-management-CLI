@@ -27,3 +27,8 @@ git clone <URL_DE_TON_REPO_GITHUB>
 cd task_cli
 dart pub get
 dart run bin/main.dart
+# Lancer l'ensemble des tests
+dart test
+# Lancer un fichier de test spécifique
+dart test test/task_repository_test.dart
+dart test test/json_storage_test.dart
